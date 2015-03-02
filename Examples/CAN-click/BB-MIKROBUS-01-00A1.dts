@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2014 Written by Peter Szamosi <szamosi.peter@gmail.com> 
+* Copyright (C) 2015 Written by Ferdinand Haselbacher <fhasex20@gmail.com> 
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License version 2 as
@@ -9,110 +9,83 @@
 /dts-v1/;
 /plugin/;
 
+
 / {
+	compatible = "ti,beaglebone", "ti,beaglebone-black";
+
 	/* identification */
 	part-number = "BB-MIKROBUS-01";
 	version = "00A1";
 
 	/* state the resources this cape uses */
 	exclusive-use =
-	/* the pin header uses */
-		“P9.12″, /* spi irq: gpio1_28 */
-		“P9.15″, /* spi irq: gpio1_16 */
-		“P9.31″, /* spi: spi1_sclk */
-		“P9.29″, /* spi: spi1_d0 */
-		“P9.30″, /* spi: spi1_d1 */
-		“P9.28″, /* spi: spi1_cs0 */
-		“P9.42″, /* spi: spi1_cs1 */
-		“P9.21″, /* dcan1: dcan1_tx */
-		“P9.22″, /* dcan1: dcan1_rx */
+		/* the pin header uses */
+		"P9.41",	/* spi irq: gpio0_20 */
+		"P9.31",	/* spi: spi1_sclk */
+		"P9.29",	/* spi: spi1_d0 */
+		"P9.30",	/* spi: spi1_d1 */
+		"P9.42",	/* spi: spi1_cs1 */
 		/* the hardware IP uses */
-		“gpio3_19″,
-		“gpio1_17″,
-		“spi1″,
-		“dcan1″;
+		"gpio0_26",
+		"spi1";
 
 	fragment@0 {
-		target = ;
+		target = <&am33xx_pinmux>;
 		__overlay__ {
 
-			bone_tt3201_dcan1_pins: bone_tt3201_dcan1_pins {
-				pinctrl-single,pins = ;
-			};
 
 			bone_tt3201_spi1_pins: pinmux_bone_tt3201_spi1_pins {
-				pinctrl-single,pins = ;
+				pinctrl-single,pins = <
+					0x190 0x33      /* mcasp0_aclkx.spi1_sclk, RX_ENABLED | PULLUP | MODE3 */
+					0x194 0x33      /* mcasp0_fsx.spi1_d0, RX_ENABLED | PULLUP | MODE3 */
+					0x198 0x13      /* mcasp0_axr0.spi1_d1, OUTPUT_PULLUP | MODE3 */
+					0x19c 0x13	/* mcasp0_ahclkr.spi1_cs0, OUTPUT_PULLUP | MODE3 */
+					0x164 0x12	/* ecap0_in_pwm0_out.spi1_cs1, OUTPUT_PULLUP | MODE2 */
+				>;
 			};
 
-			bone_tt3201_mcp2515_0_pins: pinmux_bone_tt3201_0_mcp2515_pins {
-				pinctrl-single,pins = ;
+			bone_tt3201_mcp2515_1_pins: pinmux_bone_tt3201_0_mcp2515_pins {
+				pinctrl-single,pins = <
+					0x040 0x37	/* mcasp0_fsr.gpio1_16, RX_ENABLED | PULLUP | MODE7 */
+				>;
 			};
 
-			bone_tt3201_mcp2515_1_pins: pinmux_bone_tt3201_1_mcp2515_pins {
-				pinctrl-single,pins = ;
-			};
 		};
 	};
 
 	fragment@1 {
-		target = ;
+	      target = <&spi1>;
+
 		__overlay__ {
-			#address-cells = ;
-			#size-cells = ;
+			#address-cells = <1>;
+			#size-cells = <0>;
 
-			status = “okay”;
-			pinctrl-names = “default”;
-			pinctrl-0 = ;
+			status	  = "okay";
+			pinctrl-names   = "default";
+			pinctrl-0       = <&bone_tt3201_spi1_pins>;
 
-			cs-gpios = , ;
-
-			mcp2515@0 {
-
-				compatible = “microchip,mcp2515″;
-				reg = ; /* cs1 */
-				mode = ;
-
-				spi-max-frequency = ;
-
-				pinctrl-names = “default”;
-				pinctrl-0 = ;
-
-				interrupt-parent = ;
-				interrupts = ;
-
-				mcp251x,oscillator-frequency = ;
-				mcp251x,irq-gpios = ;
-				mcp251x,stay-awake = ;
-			};
+			cs-gpios = <&gpio4 17 0>, <&gpio1 7 0>; /* Rellay gpio3 and gpio0 */
 
 			mcp2515@1 {
 
-				compatible = “microchip,mcp2515″;
-				reg = ; /* cs0 */
-				mode = ;
+				compatible = "microchip,mcp2515";
+				reg = <0>; /* cs1 */
+				mode = <0>;
 
-				spi-max-frequency = ;
+				spi-max-frequency = <10000000>;
 
-				pinctrl-names = “default”;
-				pinctrl-0 = ;
+				pinctrl-names = "default";
+				pinctrl-0 = <&bone_tt3201_mcp2515_1_pins>;
 
-				interrupt-parent = ;
-				interrupts = ;
+				interrupt-parent = <&gpio2>; /* Really gpio1 */
+				interrupts = <16>;
 
-				mcp251x,oscillator-frequency = ;
-				mcp251x,irq-gpios = ;
-				mcp251x,stay-awake = ;
-				mcp251x,enable-clkout = ;
+				mcp251x,oscillator-frequency = <10000000>;
+				mcp251x,irq-gpios = <&gpio2 16 0>; /* Really gpio1 */
+				mcp251x,stay-awake = <1>;
 			};
+
 		};
 	};
 
-	fragment@2 {
-		target = ;
-		__overlay__ {
-			status = “okay”;
-			pinctrl-names = “default”;
-			pinctrl-0 = ;
-		};
-	};
 };
